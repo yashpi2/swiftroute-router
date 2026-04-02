@@ -9,14 +9,54 @@
   body{background:#E8541A;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;font-family:sans-serif;color:#fff}
   .box{font-size:40px;background:rgba(255,255,255,.2);border-radius:16px;width:72px;height:72px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
   .nm{font-size:22px;font-weight:800}
+  .sub{font-size:13px;opacity:.6;margin-top:8px}
 </style>
 </head>
 <body>
 <div class="box">🚛</div>
 <div class="nm">SwiftRoute</div>
+<div class="sub" id="st">Starting…</div>
 <script>
-// When you get a new Netlify account, just update this URL and re-upload to GitHub
-window.location.replace('https://lovely-elf-adcb88.netlify.app');
+const SB_URL='https://xqcuysuqydduiwbwjxvo.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxY3V5c3VxeWRkdWl3YndqeHZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMjg0MzMsImV4cCI6MjA4OTYwNDQzM30.ceb5UZGFhg7OaZsNF2rra__3fvwW8u2xaUdjZPi6Hxw';
+
+// Fallback if Supabase unreachable
+const URLS=[
+  'https://elaborate-tapioca-f60acb.netlify.app',
+  'https://lovely-elf-adcb88.netlify.app'
+];
+
+function go(url){window.location.replace(url);}
+
+// Hard timeout — go to first URL after 4 seconds no matter what
+const t=setTimeout(()=>go(URLS[0]),4000);
+
+(async()=>{
+  try{
+    // Fetch all version rows from swiftroute_data where id starts with 'ver_'
+    const r=await fetch(
+      SB_URL+'/rest/v1/swiftroute_data?id=like.ver_*&select=payload&order=updated_at.desc',
+      {headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY},signal:AbortSignal.timeout(3500)}
+    );
+    if(r.ok){
+      const rows=await r.json();
+      if(rows&&rows.length){
+        // Find the row with highest version number
+        const best=rows
+          .map(r=>r.payload)
+          .filter(Boolean)
+          .sort((a,b)=>b.version-a.version)[0];
+        if(best&&best.url){
+          clearTimeout(t);
+          go(best.url);
+          return;
+        }
+      }
+    }
+  }catch(e){}
+  clearTimeout(t);
+  go(URLS[0]);
+})();
 </script>
 </body>
 </html>
