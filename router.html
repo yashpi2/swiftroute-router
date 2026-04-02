@@ -5,55 +5,39 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>SwiftRoute</title>
 <style>
-  body{margin:0;background:#E8541A;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;font-family:sans-serif;color:#fff}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#E8541A;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;font-family:sans-serif;color:#fff}
   .box{font-size:40px;background:rgba(255,255,255,.2);border-radius:16px;width:72px;height:72px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
   .nm{font-size:22px;font-weight:800}
-  .sub{font-size:13px;opacity:.7;margin-top:6px}
+  .sub{font-size:13px;opacity:.7;margin-top:8px}
 </style>
 </head>
 <body>
 <div class="box">🚛</div>
 <div class="nm">SwiftRoute</div>
-<div class="sub" id="status">Checking for latest version…</div>
+<div class="sub" id="status">Loading…</div>
 <script>
-// ══ ADD ALL YOUR NETLIFY URLS HERE ══
-const URLS = [
-  'https://lovely-elf-adcb88.netlify.app',
-  // 'https://your-second-account.netlify.app',
-];
+const SUPABASE_URL = 'https://xqcuysuqydduiwbwjxvo.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxY3V5c3VxeWRkdWl3YndqeHZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMjg0MzMsImV4cCI6MjA4OTYwNDQzM30.ceb5UZGFhg7OaZsNF2rra__3fvwW8u2xaUdjZPi6Hxw';
 
-async function getVersion(url){
-  // Reads the sr-version meta tag embedded in the HTML itself
-  // No separate version.json file needed
-  const res = await fetch(url, {cache:'no-store'});
-  if(!res.ok) throw new Error('fetch failed');
-  const html = await res.text();
-  const match = html.match(/<meta name="sr-version" content="(\d+)"/);
-  return match ? parseInt(match[1]) : 0;
-}
-
-async function getBestUrl(){
-  const results = await Promise.allSettled(
-    URLS.map(async url => {
-      const version = await getVersion(url);
-      return {url, version};
-    })
-  );
-  const valid = results
-    .filter(r => r.status === 'fulfilled')
-    .map(r => r.value)
-    .sort((a,b) => b.version - a.version);
-  return valid.length ? valid[0].url : URLS[0];
-}
+// Fallback URL if Supabase lookup fails
+const FALLBACK = 'https://lovely-elf-adcb88.netlify.app';
 
 (async () => {
   try {
-    const best = await getBestUrl();
-    document.getElementById('status').textContent = 'Loading…';
-    window.location.replace(best);
-  } catch(e) {
-    window.location.replace(URLS[0]);
-  }
+    const res = await fetch(
+      SUPABASE_URL + '/rest/v1/swiftroute_versions?select=url,version&order=version.desc&limit=1',
+      { headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY } }
+    );
+    if(res.ok){
+      const data = await res.json();
+      if(data && data[0] && data[0].url){
+        window.location.replace(data[0].url);
+        return;
+      }
+    }
+  } catch(e){}
+  window.location.replace(FALLBACK);
 })();
 </script>
 </body>
