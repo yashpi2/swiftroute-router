@@ -24,15 +24,16 @@ const URLS = [
 ];
 
 async function getVersion(url){
-  const r = await fetch(url, {cache:'no-store'});
-  const html = await r.text();
-  const m = html.match(/<meta name="sr-version" content="(\d+)"/);
-  return m ? parseInt(m[1]) : 0;
+  try{
+    const r = await fetch(url + '/version.txt', {cache:'no-store'});
+    if(!r.ok) return 0;
+    const t = (await r.text()).trim();
+    return parseInt(t) || 0;
+  } catch(e){ return 0; }
 }
 
 (async()=>{
-  // Try all URLs, pick highest version, fallback to last URL if all fail
-  let best = {url: URLS[URLS.length-1], version: 0};
+  let best = {url: URLS[0], version: 0};
   const results = await Promise.allSettled(
     URLS.map(async url => ({url, version: await getVersion(url)}))
   );
