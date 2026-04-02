@@ -19,17 +19,24 @@
 // ══ ADD ALL YOUR NETLIFY URLS HERE ══
 const URLS = [
   'https://lovely-elf-adcb88.netlify.app',
-  'https://elaborate-tapioca-f60acb.netlify.app',
-  // Add more here as you create new Netlify accounts
+  // 'https://your-second-account.netlify.app',
 ];
+
+async function getVersion(url){
+  // Reads the sr-version meta tag embedded in the HTML itself
+  // No separate version.json file needed
+  const res = await fetch(url, {cache:'no-store'});
+  if(!res.ok) throw new Error('fetch failed');
+  const html = await res.text();
+  const match = html.match(/<meta name="sr-version" content="(\d+)"/);
+  return match ? parseInt(match[1]) : 0;
+}
 
 async function getBestUrl(){
   const results = await Promise.allSettled(
     URLS.map(async url => {
-      const res = await fetch(url + '/version.json', {cache:'no-store'});
-      if(!res.ok) throw new Error('no version');
-      const data = await res.json();
-      return {url, version: data.version || 0};
+      const version = await getVersion(url);
+      return {url, version};
     })
   );
   const valid = results
@@ -45,7 +52,6 @@ async function getBestUrl(){
     document.getElementById('status').textContent = 'Loading…';
     window.location.replace(best);
   } catch(e) {
-    // Fallback to first URL
     window.location.replace(URLS[0]);
   }
 })();
