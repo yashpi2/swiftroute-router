@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SwiftRoute</title>
+<style>
+  body{margin:0;background:#E8541A;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;font-family:sans-serif;color:#fff}
+  .box{font-size:40px;background:rgba(255,255,255,.2);border-radius:16px;width:72px;height:72px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+  .nm{font-size:22px;font-weight:800}
+  .sub{font-size:13px;opacity:.7;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="box">🚛</div>
+<div class="nm">SwiftRoute</div>
+<div class="sub" id="status">Checking for latest version…</div>
+<script>
+// ══ ADD ALL YOUR NETLIFY URLS HERE ══
+const URLS = [
+  'https://lovely-elf-adcb88.netlify.app',
+  // 'https://your-second-account.netlify.app',
+  // Add more here as you create new Netlify accounts
+];
+
+async function getBestUrl(){
+  const results = await Promise.allSettled(
+    URLS.map(async url => {
+      const res = await fetch(url + '/version.json', {cache:'no-store'});
+      if(!res.ok) throw new Error('no version');
+      const data = await res.json();
+      return {url, version: data.version || 0};
+    })
+  );
+  const valid = results
+    .filter(r => r.status === 'fulfilled')
+    .map(r => r.value)
+    .sort((a,b) => b.version - a.version);
+  return valid.length ? valid[0].url : URLS[0];
+}
+
+(async () => {
+  try {
+    const best = await getBestUrl();
+    document.getElementById('status').textContent = 'Loading…';
+    window.location.replace(best);
+  } catch(e) {
+    // Fallback to first URL
+    window.location.replace(URLS[0]);
+  }
+})();
+</script>
+</body>
+</html>
