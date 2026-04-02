@@ -19,9 +19,12 @@
 <script>
 const SUPABASE_URL = 'https://xqcuysuqydduiwbwjxvo.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxY3V5c3VxeWRkdWl3YndqeHZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMjg0MzMsImV4cCI6MjA4OTYwNDQzM30.ceb5UZGFhg7OaZsNF2rra__3fvwW8u2xaUdjZPi6Hxw';
-
-// Fallback URL if Supabase lookup fails
 const FALLBACK = 'https://lovely-elf-adcb88.netlify.app';
+
+function go(url){ window.location.replace(url); }
+
+// Timeout — if nothing responds in 3 seconds, go to fallback
+const timer = setTimeout(() => go(FALLBACK), 3000);
 
 (async () => {
   try {
@@ -29,15 +32,14 @@ const FALLBACK = 'https://lovely-elf-adcb88.netlify.app';
       SUPABASE_URL + '/rest/v1/swiftroute_versions?select=url,version&order=version.desc&limit=1',
       { headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY } }
     );
+    clearTimeout(timer);
     if(res.ok){
       const data = await res.json();
-      if(data && data[0] && data[0].url){
-        window.location.replace(data[0].url);
-        return;
-      }
+      if(data && data[0] && data[0].url){ go(data[0].url); return; }
     }
   } catch(e){}
-  window.location.replace(FALLBACK);
+  clearTimeout(timer);
+  go(FALLBACK);
 })();
 </script>
 </body>
