@@ -9,13 +9,40 @@
   body{background:#E8541A;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;font-family:sans-serif;color:#fff}
   .box{font-size:40px;background:rgba(255,255,255,.2);border-radius:16px;width:72px;height:72px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
   .nm{font-size:22px;font-weight:800}
+  .sub{font-size:12px;opacity:.6;margin-top:8px}
 </style>
 </head>
 <body>
 <div class="box">🚛</div>
 <div class="nm">SwiftRoute</div>
+<div class="sub" id="st">Checking version…</div>
 <script>
-window.location.replace('https://elaborate-tapioca-f60acb.netlify.app');
+// ══ ADD ALL NETLIFY ACCOUNT URLS HERE ══
+const URLS = [
+  'https://lovely-elf-adcb88.netlify.app',
+  'https://elaborate-tapioca-f60acb.netlify.app',
+];
+
+async function getVersion(url){
+  const r = await fetch(url, {cache:'no-store'});
+  const html = await r.text();
+  const m = html.match(/<meta name="sr-version" content="(\d+)"/);
+  return m ? parseInt(m[1]) : 0;
+}
+
+(async()=>{
+  // Try all URLs, pick highest version, fallback to last URL if all fail
+  let best = {url: URLS[URLS.length-1], version: 0};
+  const results = await Promise.allSettled(
+    URLS.map(async url => ({url, version: await getVersion(url)}))
+  );
+  for(const r of results){
+    if(r.status==='fulfilled' && r.value.version > best.version){
+      best = r.value;
+    }
+  }
+  window.location.replace(best.url);
+})();
 </script>
 </body>
 </html>
