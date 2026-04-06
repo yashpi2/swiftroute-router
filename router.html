@@ -5,50 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>SwiftRoute</title>
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
+  *{margin:0;padding:0}
   body{background:#E8541A;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;font-family:sans-serif;color:#fff}
   .box{font-size:40px;background:rgba(255,255,255,.2);border-radius:16px;width:72px;height:72px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
   .nm{font-size:22px;font-weight:800}
-  .sub{font-size:12px;opacity:.7;margin-top:8px;text-align:center;padding:0 20px}
-  .bar{width:180px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin-top:16px;overflow:hidden}
-  .fill{height:100%;background:#fff;border-radius:2px;width:0%;transition:width .3s}
 </style>
 </head>
 <body>
 <div class="box">🚛</div>
 <div class="nm">SwiftRoute</div>
-<div class="sub" id="st">Checking version…</div>
-<div class="bar"><div class="fill" id="fill"></div></div>
 <script>
-const URLS=[
-  'https://lovely-elf-adcb88.netlify.app',
-  'https://elaborate-tapioca-f60acb.netlify.app',
-  'https://zesty-klepon-8041ce.netlify.app',
-  'https://elaborate-kitsune-10a20f.netlify.app',
-];
-
-async function getVersion(url){
-  try{
-    const r=await fetch(url+'/version.txt',{cache:'no-store'});
-    if(!r.ok)return 0;
-    return parseInt((await r.text()).trim())||0;
-  }catch(e){return 0;}
-}
-
-(async()=>{
-  const fill=document.getElementById('fill');
-  const st=document.getElementById('st');
-  st.textContent='Finding latest version…';
-  const results=await Promise.allSettled(URLS.map(async url=>({url,version:await getVersion(url)})));
-  fill.style.width='60%';
-  let best={url:URLS[0],version:0};
-  for(const r of results){
-    if(r.status==='fulfilled'&&r.value.version>best.version)best=r.value;
-  }
-  st.textContent='Loading v'+best.version+'…';
-  fill.style.width='100%';
-  setTimeout(()=>window.location.replace(best.url),200);
-})();
+window.location.replace('https://zesty-klepon-8041ce.netlify.app');
 </script>
 </body>
 </html>
